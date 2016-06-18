@@ -25,6 +25,10 @@ Currently, this does not provide or set up any init scripts, upstart config or s
 
 The layout of nginx is the same as the official packages from [nginx.org](http://nginx.org/en/linux_packages.html).
 
+## Testing
+
+The "hello world" of nginx configs is loading in the [testing](/testing) directory.
+
 ## Dependencies
 
 All dependencies, include the version of nginx itself, are configurable by adjusting the environment variables defined in the beginning of the script.
@@ -40,6 +44,13 @@ ENV \
 ## Static vs. Dynamic Modules
 
 The current version makes dynamic modules for ngx-lua. 
+
+One must add the following to their `nginx.conf` to use lua-ngx.
+
+```
+load_module modules/ndk_http_module.so; 
+load_module modules/ngx_http_lua_module.so;
+```
 
 ## Alpine Linux
 
