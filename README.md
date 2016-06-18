@@ -6,16 +6,18 @@ Each directory contains three sample files to aid in building [nginx](http://ngi
 No images or containers are provided. They are designed to edited and copied
 into your own build system as needed.
 
-The `centos` recipes will work with CentOS or RHEL versions 6 and 7
+The [centos](/centos) recipes will work with CentOS or RHEL versions 6 and 7
 
-The `ubuntu` recipes will work with Debian 7 and 8, and Ubuntu 12, 14 and 16.
+The [ubuntu](/ubuntu) recipes will work with Debian 7 and 8, and Ubuntu 12, 14 and 16.
 
 
 | Name    | Function |
 |---------|----------|
+| [install-lua-nginx.sh](/centos/install-lua-nginx.sh) | A shell script to download, build and install nginx + lua |
 | [Dockerfile](/centos/Dockerfile) | An all-in-one dockerfile that can be cut-n-paste into your own build system.  It builds the entire nginx + lua in one layer to make the smallest possible container |
 | [Dockerfile.debug](/centos/Dockerfile.debug) | Same as above but executes each command as a separate RUN statement.  This may be useful for debugging. |
-| [install-lua-nginx.sh](/centos/install-lua-nginx.sh) | The same functions but as a shell script (not docker) |
+
+## Installation layout
 
 The layout of nginx is the same as the official packages from [nginx.org](http://nginx.org/en/linux_packages.html).
 
@@ -30,7 +32,6 @@ ENV \
   NGINX_DEVEL=0.3.0  \
   LUAJIT=2.0.4
 ```
-
 
 ## Static vs. Dynamic Modules
 
