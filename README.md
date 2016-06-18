@@ -17,6 +17,10 @@ The [ubuntu](/ubuntu) recipes will work with Debian 7 and 8, and Ubuntu 12, 14 a
 | [Dockerfile](/centos/Dockerfile) | An all-in-one dockerfile that can be cut-n-paste into your own build system.  It builds the entire nginx + lua in one layer to make the smallest possible container |
 | [Dockerfile.debug](/centos/Dockerfile.debug) | Same as above but executes each command as a separate RUN statement.  This may be useful for debugging. |
 
+## Startup
+
+Currently, this does not provide or set up any init scripts, upstart config or systemd config as it was originally designed to run inside containers.
+
 ## Installation layout
 
 The layout of nginx is the same as the official packages from [nginx.org](http://nginx.org/en/linux_packages.html).
