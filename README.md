@@ -61,6 +61,12 @@ load_module modules/ndk_http_module.so;
 load_module modules/ngx_http_lua_module.so;
 ```
 
+## The golang generator script
+
+The bash scripts and the Dockerfiles are 99.9% identical.  The [main.go](/main.go) generator script takes a list of shell commands, and reformats them for use in either bash or in Docker.
+
+You dont need to run it, since the generated files are checked in.  Feel free to use it for other purposes.
+
 ## Alpine Linux
 
 [Alpine Linux](http://alpinelinux.org) provides lua-ngx-module in it's official repositories.  Search for [nginx-lua](http://pkgs.alpinelinux.org/packages?name=nginx-lua&branch=&repo=&arch=&maintainer=)
