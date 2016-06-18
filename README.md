@@ -27,7 +27,16 @@ The layout of nginx is the same as the official packages from [nginx.org](http:/
 
 ## Testing
 
-The "hello world" of nginx configs is loading in the [testing](/testing) directory.
+The "hello world" of nginx configs is loading in the [testing](/testing) directory and installed at `/etc/nginx/nginx-helloworld.conf`.
+
+If `curl` is install, you can test the build by
+
+```bash
+# nginx -c /etc/nginx/nginx-helloworld.conf
+# curl -sS http://127.0.0.1:80/lua_content
+Hello,world
+# nginx -s stop
+```
 
 ## Dependencies
 

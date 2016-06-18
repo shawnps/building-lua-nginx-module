@@ -61,6 +61,8 @@ cd ${tmpdir}/nginx-${NGINX_VERSION} && \
     --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
     --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}
 cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install
+mkdir -p /var/cache/nginx/client_temp
 yum remove -y ${install_packages}
 yum clean all
 rm -rf /var/cache/yum/* ${tmpdir}
+cp -f nginx.conf /etc/nginx/nginx-helloworld.conf

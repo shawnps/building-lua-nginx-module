@@ -90,9 +90,17 @@ var build_nginx = []string{
     --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
     --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}`,
 	`cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install`,
+	`mkdir -p /var/cache/nginx/client_temp`,
+}
+
+var nginx_test = []string{
+	`nginx -c /etc/nginx/nginx-helloworld.conf`,
+	`curl -sS http://127.0.0.1/lua_content`,
+	`nginx -s stop`,
 }
 
 type Generator interface {
+	Copy(string, string) string
 	From(string) string
 	Maintainer(string) string
 	Arg(string, string) string
@@ -103,6 +111,10 @@ type Generator interface {
 
 type DockerGenerator struct {
 	Debug bool
+}
+
+func (d *DockerGenerator) Copy(src, dest string) string {
+	return fmt.Sprintf("COPY %s %s", src, dest)
 }
 
 func (d *DockerGenerator) From(arg string) string {
@@ -148,6 +160,10 @@ func (d *DockerGenerator) Workdir(dir string) string {
 }
 
 type ShellGenerator struct {
+}
+
+func (d *ShellGenerator) Copy(src, dest string) string {
+	return fmt.Sprintf("cp -f %s %s", src, dest)
 }
 
 func (d *ShellGenerator) From(arg string) string {
@@ -238,4 +254,6 @@ func main() {
 	fmt.Printf("%s\n", gen.Arg("install_packages", installs))
 	fmt.Printf("%s\n", gen.Workdir("${tmpdir}"))
 	fmt.Printf("%s\n", gen.Run(cmds))
+	fmt.Printf("%s\n", gen.Copy("nginx.conf", "/etc/nginx/nginx-helloworld.conf"))
+	//fmt.Printf("%s\n", gen.Run(nginx_test))
 }
