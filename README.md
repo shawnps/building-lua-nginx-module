@@ -1,7 +1,7 @@
 # building-lua-nginx-module
 scripts and Dockerfiles for building lua-nginx-module for nginx
 
-Each directory contains three sample files (the examples link to the CentOS version) to aid in building nginx + lua-ngx-module from source.  It takes about 2 minutes to build everything.
+Each directory contains three sample files to aid in building [nginx](http://nginx.org) + [lua-ngx-module](https://github.com/openresty/lua-nginx-module) from source.  It takes about 2 minutes to build everything.
 
 No images or containers are provided. They are designed to edited and copied
 into your own build system as needed.
