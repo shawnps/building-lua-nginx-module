@@ -233,6 +233,7 @@ func main() {
 		{"NGINX_LUA", "0.10.5"},
 		{"NGINX_DEVEL", "0.3.0"},
 		{"LUAJIT", "2.0.4"},
+		{"top", "$(PWD)"},
 	}
 	var cmds []string
 	var installs string
@@ -253,7 +254,8 @@ func main() {
 	fmt.Printf("%s\n", gen.Arg("tmpdir", "/tmp/nginx"))
 	fmt.Printf("%s\n", gen.Arg("install_packages", installs))
 	fmt.Printf("%s\n", gen.Workdir("${tmpdir}"))
+	fmt.Printf("%s\n", gen.Copy("nginx.conf", "${tmpdir}/nginx.conf"))
 	fmt.Printf("%s\n", gen.Run(cmds))
-	fmt.Printf("%s\n", gen.Copy("nginx.conf", "/etc/nginx/nginx-helloworld.conf"))
+	fmt.Printf("%s\n", gen.Run([]string{"cp -f ${tmpdir}/nginx.conf /etc/nginx/nginx-helloworld.conf"}))
 	//fmt.Printf("%s\n", gen.Run(nginx_test))
 }

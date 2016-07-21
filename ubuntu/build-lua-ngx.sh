@@ -6,9 +6,11 @@ export NGINX_VERSION="1.10.1"
 export NGINX_LUA="0.10.5"
 export NGINX_DEVEL="0.3.0"
 export LUAJIT="2.0.4"
+export top="$(PWD)"
 export tmpdir="/tmp/nginx"
 export install_packages="make wget gcc autoconf automake libtool libc6-dev libc-dev libpcre3-dev zlib1g-dev libssl-dev pgp"
 mkdir -p ${tmpdir} && cd ${tmpdir}
+cp -f nginx.conf ${tmpdir}/nginx.conf
 apt-get update
 apt-get install -y --no-install-recommends procps libpcre3 zlib1g openssl ca-certificates ${install_packages}
 groupadd -r nginx
@@ -67,4 +69,4 @@ rm -rf ${tmpdir}
 apt-get purge -y ${install_packages}
 apt-get autoremove -y
 apt-get clean
-cp -f nginx.conf /etc/nginx/nginx-helloworld.conf
+cp -f ${tmpdir}/nginx.conf /etc/nginx/nginx-helloworld.conf

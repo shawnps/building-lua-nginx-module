@@ -4,10 +4,12 @@ ENV \
   NGINX_VERSION=1.10.1  \
   NGINX_LUA=0.10.5  \
   NGINX_DEVEL=0.3.0  \
-  LUAJIT=2.0.4
+  LUAJIT=2.0.4  \
+  top=$(PWD)
 ARG tmpdir="/tmp/nginx"
 ARG install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel"
 WORKDIR ${tmpdir}
+COPY nginx.conf ${tmpdir}/nginx.conf
 RUN yum install -y ${install_packages} pcre openssl
 RUN groupadd -r nginx
 RUN useradd -r -g nginx -s /sbin/nologin -d /var/cache/nginx -c "nginx user" nginx
@@ -64,4 +66,4 @@ RUN mkdir -p /var/cache/nginx/client_temp
 RUN yum remove -y ${install_packages}
 RUN yum clean all
 RUN rm -rf /var/cache/yum/* ${tmpdir}
-COPY nginx.conf /etc/nginx/nginx-helloworld.conf
+RUN cp -f ${tmpdir}/nginx.conf /etc/nginx/nginx-helloworld.conf
