@@ -5,11 +5,11 @@ ENV \
   NGINX_LUA=0.10.5  \
   NGINX_DEVEL=0.3.0  \
   LUAJIT=2.0.4  \
-  top=$(PWD)
+  top=${PWD}
 ARG tmpdir="/tmp/nginx"
 ARG install_packages="make wget gcc autoconf automake libtool libc6-dev libc-dev libpcre3-dev zlib1g-dev libssl-dev pgp"
 WORKDIR ${tmpdir}
-COPY nginx.conf ${tmpdir}/nginx.conf
+COPY ${top}/nginx.conf /etc/nginx/nginx-helloworld.conf
 RUN set -ex \
   && apt-get update \
   && apt-get install -y --no-install-recommends procps libpcre3 zlib1g openssl ca-certificates ${install_packages} \
@@ -69,5 +69,3 @@ RUN set -ex \
   && apt-get purge -y ${install_packages} \
   && apt-get autoremove -y \
   && apt-get clean
-RUN set -ex \
-  && cp -f ${tmpdir}/nginx.conf /etc/nginx/nginx-helloworld.conf

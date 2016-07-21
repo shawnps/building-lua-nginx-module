@@ -10,7 +10,7 @@ export top="${PWD}"
 export tmpdir="/tmp/nginx"
 export install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel"
 mkdir -p ${tmpdir} && cd ${tmpdir}
-cp -f ${top}/nginx.conf ${tmpdir}/nginx.conf
+cp -f ${top}/nginx.conf /etc/nginx/nginx-helloworld.conf
 yum install -y ${install_packages} pcre openssl
 groupadd -r nginx
 useradd -r -g nginx -s /sbin/nologin -d /var/cache/nginx -c "nginx user" nginx
@@ -67,4 +67,3 @@ mkdir -p /var/cache/nginx/client_temp
 yum remove -y ${install_packages}
 yum clean all
 rm -rf /var/cache/yum/* ${tmpdir}
-cp -f ${tmpdir}/nginx.conf /etc/nginx/nginx-helloworld.conf

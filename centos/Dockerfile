@@ -5,11 +5,11 @@ ENV \
   NGINX_LUA=0.10.5  \
   NGINX_DEVEL=0.3.0  \
   LUAJIT=2.0.4  \
-  top=$(PWD)
+  top=${PWD}
 ARG tmpdir="/tmp/nginx"
 ARG install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel"
 WORKDIR ${tmpdir}
-COPY nginx.conf ${tmpdir}/nginx.conf
+COPY ${top}/nginx.conf /etc/nginx/nginx-helloworld.conf
 RUN set -ex \
   && yum install -y ${install_packages} pcre openssl \
   && groupadd -r nginx \
@@ -67,5 +67,3 @@ RUN set -ex \
   && yum remove -y ${install_packages} \
   && yum clean all \
   && rm -rf /var/cache/yum/* ${tmpdir}
-RUN set -ex \
-  && cp -f ${tmpdir}/nginx.conf /etc/nginx/nginx-helloworld.conf
