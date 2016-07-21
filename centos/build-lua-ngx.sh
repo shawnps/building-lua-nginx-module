@@ -12,7 +12,7 @@ export install_packages="wget gcc autoconf automake libtool pcre-devel openssl-d
 mkdir -p ${tmpdir} && cd ${tmpdir}
 cp -f ${top}/nginx.conf /etc/nginx/nginx-helloworld.conf
 yum install -y ${install_packages} pcre openssl
-groupadd -r nginx
+groupadd -f -r nginx
 useradd -r -g nginx -s /sbin/nologin -d /var/cache/nginx -c "nginx user" nginx
 wget -nv -O LuaJIT-${LUAJIT}.tar.gz http://luajit.org/download/LuaJIT-${LUAJIT}.tar.gz
 wget -nv -O nginx-${NGINX_VERSION}.tar.gz http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz

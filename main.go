@@ -14,7 +14,7 @@ var centos_installs = "wget gcc autoconf automake libtool pcre-devel openssl-dev
 
 var centos_header = []string{
 	`yum install -y ${install_packages} pcre openssl`,
-	`groupadd -r nginx`,
+	`groupadd -f -r nginx`,
 	`useradd -r -g nginx -s /sbin/nologin -d /var/cache/nginx -c "nginx user" nginx`,
 }
 

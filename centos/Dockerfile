@@ -12,7 +12,7 @@ WORKDIR ${tmpdir}
 COPY ${top}/nginx.conf /etc/nginx/nginx-helloworld.conf
 RUN set -ex \
   && yum install -y ${install_packages} pcre openssl \
-  && groupadd -r nginx \
+  && groupadd -f -r nginx \
   && useradd -r -g nginx -s /sbin/nologin -d /var/cache/nginx -c "nginx user" nginx \
   && wget -nv -O LuaJIT-${LUAJIT}.tar.gz http://luajit.org/download/LuaJIT-${LUAJIT}.tar.gz \
   && wget -nv -O nginx-${NGINX_VERSION}.tar.gz http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
