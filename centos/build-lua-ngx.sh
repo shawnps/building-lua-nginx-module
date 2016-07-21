@@ -6,11 +6,11 @@ export NGINX_VERSION="1.10.1"
 export NGINX_LUA="0.10.5"
 export NGINX_DEVEL="0.3.0"
 export LUAJIT="2.0.4"
-export top="$(PWD)"
+export top="${PWD}"
 export tmpdir="/tmp/nginx"
 export install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel"
 mkdir -p ${tmpdir} && cd ${tmpdir}
-cp -f nginx.conf ${tmpdir}/nginx.conf
+cp -f ${top}/nginx.conf ${tmpdir}/nginx.conf
 yum install -y ${install_packages} pcre openssl
 groupadd -r nginx
 useradd -r -g nginx -s /sbin/nologin -d /var/cache/nginx -c "nginx user" nginx
