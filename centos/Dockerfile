@@ -2,12 +2,13 @@ FROM centos:7
 MAINTAINER signalsciences.com
 ENV \
   NGINX_VERSION=1.10.1  \
-  NGINX_LUA=0.10.5  \
+  NGINX_LUA=0.10.6  \
   NGINX_DEVEL=0.3.0  \
   LUAJIT=2.0.4  \
   top=${PWD}
 ARG tmpdir="/tmp/nginx"
 ARG install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel"
+ARG modules_path="/usr/lib64/nginx/modules"
 WORKDIR ${tmpdir}
 COPY ${top}/nginx.conf /etc/nginx/nginx-helloworld.conf
 RUN set -ex \
@@ -28,6 +29,7 @@ RUN set -ex \
     LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}/src LUAJIT_INC=${tmpdir}/LuaJIT-${LUAJIT}/src ./configure \
     --prefix=/etc/nginx \
     --sbin-path=/usr/sbin/nginx \
+    --modules-path=${modules_path} \
     --conf-path=/etc/nginx/nginx.conf \
     --error-log-path=/var/log/nginx/error.log \
     --http-log-path=/var/log/nginx/access.log \
@@ -40,6 +42,7 @@ RUN set -ex \
     --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
     --user=nginx \
     --group=nginx \
+    --with-http_ssl_module \
     --with-http_realip_module \
     --with-http_addition_module \
     --with-http_sub_module \
@@ -59,7 +62,7 @@ RUN set -ex \
     --with-file-aio \
     --with-ipv6 \
     --with-http_v2_module \
-    --with-http_ssl_module \
+    --with-cc-opt='-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic' \
     --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
     --add-dynamic-module=../lua-nginx-module-${NGINX_LUA} \
   && cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install \

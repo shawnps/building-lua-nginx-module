@@ -3,12 +3,13 @@ set -ex
 # FROM ubuntu:16.04
 # MAINTAINER signalsciences.com
 export NGINX_VERSION="1.10.1"
-export NGINX_LUA="0.10.5"
+export NGINX_LUA="0.10.6"
 export NGINX_DEVEL="0.3.0"
 export LUAJIT="2.0.4"
 export top="${PWD}"
 export tmpdir="/tmp/nginx"
 export install_packages="make wget gcc autoconf automake libtool libc6-dev libc-dev libpcre3-dev zlib1g-dev libssl-dev pgp"
+export modules_path="/etc/nginx/modules"
 mkdir -p ${tmpdir} && cd ${tmpdir}
 cp -f ${top}/nginx.conf /etc/nginx/nginx-helloworld.conf
 apt-get update
@@ -29,6 +30,7 @@ cd ${tmpdir}/nginx-${NGINX_VERSION} && \
     LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}/src LUAJIT_INC=${tmpdir}/LuaJIT-${LUAJIT}/src ./configure \
     --prefix=/etc/nginx \
     --sbin-path=/usr/sbin/nginx \
+    --modules-path=${modules_path} \
     --conf-path=/etc/nginx/nginx.conf \
     --error-log-path=/var/log/nginx/error.log \
     --http-log-path=/var/log/nginx/access.log \
@@ -41,6 +43,7 @@ cd ${tmpdir}/nginx-${NGINX_VERSION} && \
     --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
     --user=nginx \
     --group=nginx \
+    --with-http_ssl_module \
     --with-http_realip_module \
     --with-http_addition_module \
     --with-http_sub_module \
@@ -60,7 +63,7 @@ cd ${tmpdir}/nginx-${NGINX_VERSION} && \
     --with-file-aio \
     --with-ipv6 \
     --with-http_v2_module \
-    --with-http_ssl_module \
+    --with-cc-opt='-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic' \
     --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
     --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}
 cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install
