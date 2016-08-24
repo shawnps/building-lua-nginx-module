@@ -55,6 +55,7 @@ var build_nginx = []string{
     LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}/src LUAJIT_INC=${tmpdir}/LuaJIT-${LUAJIT}/src ./configure \
     --prefix=/etc/nginx \
     --sbin-path=/usr/sbin/nginx \
+    --modules-path=${modules_path} \
     --conf-path=/etc/nginx/nginx.conf \
     --error-log-path=/var/log/nginx/error.log \
     --http-log-path=/var/log/nginx/access.log \
@@ -67,6 +68,7 @@ var build_nginx = []string{
     --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
     --user=nginx \
     --group=nginx \
+    --with-http_ssl_module \
     --with-http_realip_module \
     --with-http_addition_module \
     --with-http_sub_module \
@@ -86,7 +88,7 @@ var build_nginx = []string{
     --with-file-aio \
     --with-ipv6 \
     --with-http_v2_module \
-    --with-http_ssl_module \
+    --with-cc-opt='-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic' \
     --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
     --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}`,
 	`cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install`,
@@ -237,13 +239,16 @@ func main() {
 	}
 	var cmds []string
 	var installs string
+	var modulesPath string
 	switch *argOS {
 	case "centos", "rhel", "redhat":
 		cmds = mergeLines(centos_header, build_nginx, centos_footer)
 		installs = centos_installs
+		modulesPath = "/usr/lib64/nginx/modules"
 	case "debian", "ubuntu":
 		cmds = mergeLines(ubuntu_header, build_nginx, ubuntu_footer)
 		installs = ubuntu_installs
+		modulesPath = "/etc/nginx/modules"
 	default:
 		log.Fatalf("Unknown OS type: should be centos or ubuntu")
 	}
@@ -253,6 +258,7 @@ func main() {
 	fmt.Printf("%s\n", gen.Env(env))
 	fmt.Printf("%s\n", gen.Arg("tmpdir", "/tmp/nginx"))
 	fmt.Printf("%s\n", gen.Arg("install_packages", installs))
+	fmt.Printf("%s\n", gen.Arg("modules_path", modulesPath))
 	fmt.Printf("%s\n", gen.Workdir("${tmpdir}"))
 	fmt.Printf("%s\n", gen.Copy("${top}/nginx.conf", "/etc/nginx/nginx-helloworld.conf"))
 	fmt.Printf("%s\n", gen.Run(cmds))
