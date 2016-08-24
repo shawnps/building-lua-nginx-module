@@ -71,3 +71,23 @@ You dont need to run it, since the generated files are checked in.  Feel free to
 
 [Alpine Linux](http://alpinelinux.org) provides lua-ngx-module in it's official repositories.  Search for [nginx-lua](http://pkgs.alpinelinux.org/packages?name=nginx-lua&branch=&repo=&arch=&maintainer=)
 
+### Key Locations
+
+RedHat / CentOS
+
+```
+nginx path prefix: "/etc/nginx"
+nginx binary file: "/usr/sbin/nginx"
+nginx modules path: "/usr/lib64/nginx/modules"
+nginx configuration prefix: "/etc/nginx"
+nginx configuration file: "/etc/nginx/nginx.conf"
+nginx pid file: "/var/run/nginx.pid"
+nginx error log file: "/var/log/nginx/error.log"
+nginx http access log file: "/var/log/nginx/access.log"
+nginx http client request body temporary files: "/var/cache/nginx/client_temp"
+nginx http proxy temporary files: "/var/cache/nginx/proxy_temp"
+nginx http fastcgi temporary files: "/var/cache/nginx/fastcgi_temp"
+nginx http uwsgi temporary files: "/var/cache/nginx/uwsgi_temp"
+nginx http scgi temporary files: "/var/cache/nginx/scgi_temp"
+```
+
