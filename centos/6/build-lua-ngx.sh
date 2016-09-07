@@ -2,10 +2,14 @@
 set -ex
 # FROM centos:6
 # MAINTAINER signalsciences.com
-export NGINX_VERSION="1.10.1"
-export NGINX_LUA="0.10.6"
-export NGINX_DEVEL="0.3.0"
-export LUAJIT="2.0.4"
+
+export NGINX_VERSION="${NGINX_VERSION:-1.10.1}"
+
+export NGINX_LUA="${NGINX_LUA:-0.10.6}"
+
+export NGINX_DEVEL="${NGINX_DEVEL:-0.3.0}"
+
+export LUAJIT="${LUAJIT:-2.0.4}"
 export top="${PWD}"
 export tmpdir="/tmp/nginx"
 export install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel"

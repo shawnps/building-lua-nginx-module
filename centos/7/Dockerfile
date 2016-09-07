@@ -1,11 +1,14 @@
 FROM centos:7
 MAINTAINER signalsciences.com
-ENV \
-  NGINX_VERSION=1.10.1  \
-  NGINX_LUA=0.10.6  \
-  NGINX_DEVEL=0.3.0  \
-  LUAJIT=2.0.4  \
-  top=${PWD}
+ARG NGINX_VERSION
+ENV NGINX_VERSION="${NGINX_VERSION:-1.10.1}"
+ARG NGINX_LUA
+ENV NGINX_LUA="${NGINX_LUA:-0.10.6}"
+ARG NGINX_DEVEL
+ENV NGINX_DEVEL="${NGINX_DEVEL:-0.3.0}"
+ARG LUAJIT
+ENV LUAJIT="${LUAJIT:-2.0.4}"
+ARG top="${PWD}"
 ARG tmpdir="/tmp/nginx"
 ARG install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel"
 ARG modules_path="/usr/lib64/nginx/modules"
