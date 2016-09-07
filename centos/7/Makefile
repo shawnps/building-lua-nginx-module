@@ -5,4 +5,10 @@ build:
 console:
 		docker run -it --rm ${CONTAINER} bash
 
+history:
+		docker history ${CONTAINER}
+
+image:
+		docker images ${CONTAINER}
+
 .PHONY: console build
