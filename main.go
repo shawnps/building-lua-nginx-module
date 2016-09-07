@@ -107,6 +107,7 @@ type Generator interface {
 	Maintainer(string) string
 	Arg(string, string) string
 	Env([][2]string) string
+	SetEnv(string, string) string
 	Run([]string) string
 	Workdir(string) string
 }
@@ -128,7 +129,14 @@ func (d *DockerGenerator) Maintainer(arg string) string {
 }
 
 func (d *DockerGenerator) Arg(key, value string) string {
+	if value == "" {
+		return fmt.Sprintf("ARG %s", key)
+	}
 	return fmt.Sprintf("ARG %s=%q", key, value)
+}
+
+func (d *DockerGenerator) SetEnv(key, value string) string {
+	return fmt.Sprintf("ENV %s=%q", key, value)
 }
 
 func (d *DockerGenerator) Env(args [][2]string) string {
@@ -175,6 +183,13 @@ func (d *ShellGenerator) Maintainer(arg string) string {
 	return "# MAINTAINER " + arg
 }
 func (d *ShellGenerator) Arg(key, value string) string {
+	if value == "" {
+		return ""
+	}
+	return fmt.Sprintf("export %s=%q", key, value)
+}
+
+func (d *ShellGenerator) SetEnv(key, value string) string {
 	return fmt.Sprintf("export %s=%q", key, value)
 }
 
@@ -235,7 +250,6 @@ func main() {
 		{"NGINX_LUA", "0.10.6"},
 		{"NGINX_DEVEL", "0.3.0"},
 		{"LUAJIT", "2.0.4"},
-		{"top", "${PWD}"},
 	}
 	var cmds []string
 	var installs string
@@ -255,7 +269,13 @@ func main() {
 
 	fmt.Printf("%s\n", gen.From(*argFrom))
 	fmt.Printf("%s\n", gen.Maintainer(*argMaintainer))
-	fmt.Printf("%s\n", gen.Env(env))
+
+	for _, arg := range env {
+		k, v := arg[0], arg[1]
+		fmt.Printf("%s\n", gen.Arg(k, ""))
+		fmt.Printf("%s\n", gen.SetEnv(k, fmt.Sprintf("${%s:-%s}", k, v)))
+	}
+	fmt.Printf("%s\n", gen.Arg("top", "${PWD}"))
 	fmt.Printf("%s\n", gen.Arg("tmpdir", "/tmp/nginx"))
 	fmt.Printf("%s\n", gen.Arg("install_packages", installs))
 	fmt.Printf("%s\n", gen.Arg("modules_path", modulesPath))
