@@ -269,7 +269,8 @@ func main() {
 		log.Fatalf("Unknown OS type: should be centos or ubuntu")
 	}
 
-	// hacks around various old compilers
+	// hacks around various old compilers.  We are explicity doing the replacement
+	// here and not in the dockerfile so `nginx -V` shows the flags instead of ${cflag_extra}
 	switch *argFrom {
 	case "centos:6":
 		// needed for gcc < 4.9
@@ -278,6 +279,9 @@ func main() {
 	default:
 		// gcc > 4.9
 		cflagSecurity = "-Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong"
+	}
+	for i, line := range cmds {
+		cmds[i] = strings.Replace(line, "${cflag_extra}", cflagSecurity, -1)
 	}
 
 	fmt.Printf("%s\n", gen.From(*argFrom))
@@ -292,7 +296,6 @@ func main() {
 	fmt.Printf("%s\n", gen.Arg("tmpdir", "/tmp/nginx"))
 	fmt.Printf("%s\n", gen.Arg("install_packages", installs))
 	fmt.Printf("%s\n", gen.Arg("modules_path", modulesPath))
-	fmt.Printf("%s\n", gen.Arg("cflag_extra", cflagSecurity))
 	fmt.Printf("%s\n", gen.Workdir("${tmpdir}"))
 	fmt.Printf("%s\n", gen.Copy("${top}/nginx.conf", "/etc/nginx/nginx-helloworld.conf"))
 	fmt.Printf("%s\n", gen.Run(cmds))

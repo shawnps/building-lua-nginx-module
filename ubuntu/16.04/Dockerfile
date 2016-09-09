@@ -12,7 +12,6 @@ ARG top="${PWD}"
 ARG tmpdir="/tmp/nginx"
 ARG install_packages="make wget gcc autoconf automake libtool libc6-dev libc-dev libpcre3-dev zlib1g-dev libssl-dev pgp"
 ARG modules_path="/etc/nginx/modules"
-ARG cflag_extra="-Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong"
 WORKDIR ${tmpdir}
 COPY ${top}/nginx.conf /etc/nginx/nginx-helloworld.conf
 RUN set -ex \
@@ -67,7 +66,7 @@ RUN set -ex \
     --with-file-aio \
     --with-ipv6 \
     --with-http_v2_module \
-    --with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic ${cflag_extra}' \
+    --with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong' \
     --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
     --add-dynamic-module=../lua-nginx-module-${NGINX_LUA} \
   && cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install \
