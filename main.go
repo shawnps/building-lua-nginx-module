@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-var centos_installs = "wget gcc autoconf automake libtool pcre-devel openssl-devel libaio-devel"
+var centos_installs = "wget gcc autoconf automake libtool pcre-devel openssl-devel"
 
 var centos_header = []string{
 	`yum install -y ${install_packages} pcre openssl`,
@@ -88,7 +88,7 @@ var build_nginx = []string{
     --with-file-aio \
     --with-ipv6 \
     --with-http_v2_module \
-    --with-cc-opt='-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic' \
+    --with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic ${cflag_extra}' \
     --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
     --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}`,
 	`cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install`,
@@ -254,6 +254,8 @@ func main() {
 	var cmds []string
 	var installs string
 	var modulesPath string
+	var cflagSecurity string
+
 	switch *argOS {
 	case "centos", "rhel", "redhat":
 		cmds = mergeLines(centos_header, build_nginx, centos_footer)
@@ -265,6 +267,17 @@ func main() {
 		modulesPath = "/etc/nginx/modules"
 	default:
 		log.Fatalf("Unknown OS type: should be centos or ubuntu")
+	}
+
+	// hacks around various old compilers
+	switch *argFrom {
+	case "centos:6":
+		// needed for gcc < 4.9
+		cflagSecurity = "-Wp,-D_FORTIFY_SOURCE=2 -fstack-protector --param ssp-buffer-size=4"
+		//cflagSecurity = "-Wp,-D_FORTIFY_SOURCE=2"
+	default:
+		// gcc > 4.9
+		cflagSecurity = "-Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong"
 	}
 
 	fmt.Printf("%s\n", gen.From(*argFrom))
@@ -279,6 +292,7 @@ func main() {
 	fmt.Printf("%s\n", gen.Arg("tmpdir", "/tmp/nginx"))
 	fmt.Printf("%s\n", gen.Arg("install_packages", installs))
 	fmt.Printf("%s\n", gen.Arg("modules_path", modulesPath))
+	fmt.Printf("%s\n", gen.Arg("cflag_extra", cflagSecurity))
 	fmt.Printf("%s\n", gen.Workdir("${tmpdir}"))
 	fmt.Printf("%s\n", gen.Copy("${top}/nginx.conf", "/etc/nginx/nginx-helloworld.conf"))
 	fmt.Printf("%s\n", gen.Run(cmds))

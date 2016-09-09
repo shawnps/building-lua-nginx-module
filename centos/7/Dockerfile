@@ -10,8 +10,9 @@ ARG LUAJIT
 ENV LUAJIT="${LUAJIT:-2.0.4}"
 ARG top="${PWD}"
 ARG tmpdir="/tmp/nginx"
-ARG install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel libaio-devel"
+ARG install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel"
 ARG modules_path="/usr/lib64/nginx/modules"
+ARG cflag_extra="-Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong"
 WORKDIR ${tmpdir}
 COPY ${top}/nginx.conf /etc/nginx/nginx-helloworld.conf
 RUN set -ex \
@@ -65,7 +66,7 @@ RUN set -ex \
     --with-file-aio \
     --with-ipv6 \
     --with-http_v2_module \
-    --with-cc-opt='-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic' \
+    --with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic ${cflag_extra}' \
     --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
     --add-dynamic-module=../lua-nginx-module-${NGINX_LUA} \
   && cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install \
