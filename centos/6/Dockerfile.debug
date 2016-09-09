@@ -10,7 +10,7 @@ ARG LUAJIT
 ENV LUAJIT="${LUAJIT:-2.0.4}"
 ARG top="${PWD}"
 ARG tmpdir="/tmp/nginx"
-ARG install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel"
+ARG install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel libaio-devel"
 ARG modules_path="/usr/lib64/nginx/modules"
 WORKDIR ${tmpdir}
 COPY ${top}/nginx.conf /etc/nginx/nginx-helloworld.conf

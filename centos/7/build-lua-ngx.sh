@@ -12,7 +12,7 @@ export NGINX_DEVEL="${NGINX_DEVEL:-0.3.0}"
 export LUAJIT="${LUAJIT:-2.0.4}"
 export top="${PWD}"
 export tmpdir="/tmp/nginx"
-export install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel"
+export install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel libaio-devel"
 export modules_path="/usr/lib64/nginx/modules"
 mkdir -p ${tmpdir} && cd ${tmpdir}
 cp -f ${top}/nginx.conf /etc/nginx/nginx-helloworld.conf

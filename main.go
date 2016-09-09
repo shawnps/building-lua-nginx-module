@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-var centos_installs = "wget gcc autoconf automake libtool pcre-devel openssl-devel"
+var centos_installs = "wget gcc autoconf automake libtool pcre-devel openssl-devel libaio-devel"
 
 var centos_header = []string{
 	`yum install -y ${install_packages} pcre openssl`,
