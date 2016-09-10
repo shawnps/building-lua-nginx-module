@@ -13,4 +13,4 @@ history:
 image:
 		docker images ${CONTAINER}
 
-.PHONY: console build
+.PHONY: build build-debug console history image

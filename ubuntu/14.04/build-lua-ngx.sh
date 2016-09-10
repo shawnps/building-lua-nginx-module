@@ -1,34 +1,37 @@
-FROM centos:6
-MAINTAINER signalsciences.com
-ARG NGINX_VERSION
-ENV NGINX_VERSION="${NGINX_VERSION:-1.10.1}"
-ARG NGINX_LUA
-ENV NGINX_LUA="${NGINX_LUA:-0.10.6}"
-ARG NGINX_DEVEL
-ENV NGINX_DEVEL="${NGINX_DEVEL:-0.3.0}"
-ARG LUAJIT
-ENV LUAJIT="${LUAJIT:-2.0.4}"
-ARG top="${PWD}"
-ARG tmpdir="/tmp/nginx"
-ARG install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel file which"
-ARG modules_path="/usr/lib64/nginx/modules"
-WORKDIR ${tmpdir}
-COPY ${top}/nginx.conf /etc/nginx/nginx-helloworld.conf
-RUN yum install -y ${install_packages} pcre openssl
-RUN groupadd -f -r nginx
-RUN useradd -r -g nginx -s /sbin/nologin -d /var/cache/nginx -c "nginx user" nginx
-RUN wget -nv -O ${tmpdir}/checksec https://raw.githubusercontent.com/slimm609/checksec.sh/master/checksec
-RUN wget -nv -O LuaJIT-${LUAJIT}.tar.gz http://luajit.org/download/LuaJIT-${LUAJIT}.tar.gz
-RUN wget -nv -O nginx-${NGINX_VERSION}.tar.gz http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz
-RUN wget -nv -O lua-nginx-module-${NGINX_LUA}.tar.gz https://github.com/openresty/lua-nginx-module/archive/v${NGINX_LUA}.tar.gz
-RUN wget -nv -O ngx_devel_kit-${NGINX_DEVEL}.tar.gz https://github.com/simpl/ngx_devel_kit/archive/v${NGINX_DEVEL}.tar.gz
-RUN tar -xf LuaJIT-${LUAJIT}.tar.gz
-RUN tar -xf lua-nginx-module-${NGINX_LUA}.tar.gz
-RUN tar -xf ngx_devel_kit-${NGINX_DEVEL}.tar.gz
-RUN tar -xf nginx-${NGINX_VERSION}.tar.gz
-RUN cd ${tmpdir}/LuaJIT-${LUAJIT} && make amalg BUILDMODE=static CC="gcc -fPIC"
-RUN cp ${tmpdir}/LuaJIT-${LUAJIT}/src/libluajit.a ${tmpdir}/LuaJIT-${LUAJIT}/src/libluajit-5.1.a
-RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}/src LUAJIT_INC=${tmpdir}/LuaJIT-${LUAJIT}/src ./configure \
+#!/bin/sh
+set -ex
+# FROM ubuntu:14.04
+# MAINTAINER signalsciences.com
+
+export NGINX_VERSION="${NGINX_VERSION:-1.10.1}"
+
+export NGINX_LUA="${NGINX_LUA:-0.10.6}"
+
+export NGINX_DEVEL="${NGINX_DEVEL:-0.3.0}"
+
+export LUAJIT="${LUAJIT:-2.0.4}"
+export top="${PWD}"
+export tmpdir="/tmp/nginx"
+export install_packages="make wget gcc autoconf automake libtool libc6-dev libc-dev libpcre3-dev zlib1g-dev libssl-dev pgp"
+export modules_path="/etc/nginx/modules"
+mkdir -p ${tmpdir} && cd ${tmpdir}
+cp -f ${top}/nginx.conf /etc/nginx/nginx-helloworld.conf
+apt-get update
+apt-get install -y --no-install-recommends procps libpcre3 zlib1g openssl ca-certificates ${install_packages}
+groupadd -r nginx
+useradd -r -g nginx -s /sbin/nologin -d /var/cache/nginx -c "nginx user" nginx
+wget -nv -O ${tmpdir}/checksec https://raw.githubusercontent.com/slimm609/checksec.sh/master/checksec
+wget -nv -O LuaJIT-${LUAJIT}.tar.gz http://luajit.org/download/LuaJIT-${LUAJIT}.tar.gz
+wget -nv -O nginx-${NGINX_VERSION}.tar.gz http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz
+wget -nv -O lua-nginx-module-${NGINX_LUA}.tar.gz https://github.com/openresty/lua-nginx-module/archive/v${NGINX_LUA}.tar.gz
+wget -nv -O ngx_devel_kit-${NGINX_DEVEL}.tar.gz https://github.com/simpl/ngx_devel_kit/archive/v${NGINX_DEVEL}.tar.gz
+tar -xf LuaJIT-${LUAJIT}.tar.gz
+tar -xf lua-nginx-module-${NGINX_LUA}.tar.gz
+tar -xf ngx_devel_kit-${NGINX_DEVEL}.tar.gz
+tar -xf nginx-${NGINX_VERSION}.tar.gz
+cd ${tmpdir}/LuaJIT-${LUAJIT} && make amalg BUILDMODE=static CC="gcc -fPIC"
+cp ${tmpdir}/LuaJIT-${LUAJIT}/src/libluajit.a ${tmpdir}/LuaJIT-${LUAJIT}/src/libluajit-5.1.a
+cd ${tmpdir}/nginx-${NGINX_VERSION} && LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}/src LUAJIT_INC=${tmpdir}/LuaJIT-${LUAJIT}/src ./configure \
 --prefix=/etc/nginx \
 --sbin-path=/usr/sbin/nginx \
 --modules-path=${modules_path} \
@@ -66,9 +69,9 @@ RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}
 --with-http_v2_module \
 --with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector --param ssp-buffer-size=4 -fPIE' \
 --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now  -fPIE -pie'
-RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && make -f objs/Makefile binary
-RUN cp ./objs/nginx ./objs/nginx-pie
-RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}/src LUAJIT_INC=${tmpdir}/LuaJIT-${LUAJIT}/src ./configure \
+cd ${tmpdir}/nginx-${NGINX_VERSION} && make -f objs/Makefile binary
+cp ./objs/nginx ./objs/nginx-pie
+cd ${tmpdir}/nginx-${NGINX_VERSION} && LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}/src LUAJIT_INC=${tmpdir}/LuaJIT-${LUAJIT}/src ./configure \
 --prefix=/etc/nginx \
 --sbin-path=/usr/sbin/nginx \
 --modules-path=${modules_path} \
@@ -108,14 +111,15 @@ RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}
 --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now ' \
 --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
 --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}
-RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install
-RUN ls -l /usr/sbin/nginx
-RUN cp ./objs/nginx-pie /usr/sbin/nginx
-RUN ls -l /usr/sbin/nginx
-RUN /bin/bash -f ${tmpdir}/checksec -f /usr/sbin/nginx
-RUN /bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ndk_http_module.so
-RUN /bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ngx_http_lua_module.so
-RUN mkdir -p /var/cache/nginx/client_temp
-RUN yum remove -y ${install_packages}
-RUN yum clean all
-RUN rm -rf /var/cache/yum/* ${tmpdir}
+cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install
+ls -l /usr/sbin/nginx
+cp ./objs/nginx-pie /usr/sbin/nginx
+ls -l /usr/sbin/nginx
+/bin/bash -f ${tmpdir}/checksec -f /usr/sbin/nginx
+/bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ndk_http_module.so
+/bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ngx_http_lua_module.so
+mkdir -p /var/cache/nginx/client_temp
+rm -rf ${tmpdir}
+apt-get purge -y ${install_packages}
+apt-get autoremove -y
+apt-get clean

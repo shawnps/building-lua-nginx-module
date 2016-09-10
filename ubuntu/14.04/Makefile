@@ -1,4 +1,4 @@
-CONTAINER=ubuntu1604-nginx-lua
+CONTAINER=ubuntu1404-nginx-lua
 build:
 		docker build -t ${CONTAINER} .
 

@@ -40,64 +40,99 @@ var ubuntu_footer = []string{
 	`apt-get clean`,
 }
 
-var build_nginx = []string{
-	`wget -nv -O ${tmpdir}/checksec https://raw.githubusercontent.com/slimm609/checksec.sh/master/checksec`,
-	`wget -nv -O LuaJIT-${LUAJIT}.tar.gz http://luajit.org/download/LuaJIT-${LUAJIT}.tar.gz`,
-	`wget -nv -O nginx-${NGINX_VERSION}.tar.gz http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz`,
-	`wget -nv -O lua-nginx-module-${NGINX_LUA}.tar.gz https://github.com/openresty/lua-nginx-module/archive/v${NGINX_LUA}.tar.gz`,
-	`wget -nv -O ngx_devel_kit-${NGINX_DEVEL}.tar.gz https://github.com/simpl/ngx_devel_kit/archive/v${NGINX_DEVEL}.tar.gz`,
-	`tar -xf LuaJIT-${LUAJIT}.tar.gz`,
-	`tar -xf lua-nginx-module-${NGINX_LUA}.tar.gz`,
-	`tar -xf ngx_devel_kit-${NGINX_DEVEL}.tar.gz`,
-	`tar -xf nginx-${NGINX_VERSION}.tar.gz`,
-	`cd ${tmpdir}/LuaJIT-${LUAJIT} && make amalg BUILDMODE=static CC="gcc -fPIC"`,
-	`cp ${tmpdir}/LuaJIT-${LUAJIT}/src/libluajit.a ${tmpdir}/LuaJIT-${LUAJIT}/src/libluajit-5.1.a`,
-	`cd ${tmpdir}/nginx-${NGINX_VERSION} && \
-    LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}/src LUAJIT_INC=${tmpdir}/LuaJIT-${LUAJIT}/src ./configure \
-    --prefix=/etc/nginx \
-    --sbin-path=/usr/sbin/nginx \
-    --modules-path=${modules_path} \
-    --conf-path=/etc/nginx/nginx.conf \
-    --error-log-path=/var/log/nginx/error.log \
-    --http-log-path=/var/log/nginx/access.log \
-    --pid-path=/var/run/nginx.pid \
-    --lock-path=/var/run/nginx.lock \
-    --http-client-body-temp-path=/var/cache/nginx/client_temp \
-    --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
-    --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
-    --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
-    --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
-    --user=nginx \
-    --group=nginx \
-    --with-http_ssl_module \
-    --with-http_realip_module \
-    --with-http_addition_module \
-    --with-http_sub_module \
-    --with-http_dav_module \
-    --with-http_flv_module \
-    --with-http_mp4_module \
-    --with-http_gunzip_module \
-    --with-http_gzip_static_module \
-    --with-http_random_index_module \
-    --with-http_secure_link_module \
-    --with-http_stub_status_module \
-    --with-http_auth_request_module \
-    --with-threads \
-    --with-stream \
-    --with-stream_ssl_module \
-    --with-http_slice_module \
-    --with-file-aio \
-    --with-ipv6 \
-    --with-http_v2_module \
-    --with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic ${cflag_extra}' \
-    --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now' \
-    --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
-    --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}`,
-	`cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install`,
-	`/bin/bash -f ${tmpdir}/checksec -f /usr/sbin/nginx`,
-	`/bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ndk_http_module.so`,
-	`/bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ngx_http_lua_module.so`,
-	`mkdir -p /var/cache/nginx/client_temp`,
+// configNginx returns the single configure command
+func configNginx(pie bool, cflags string, ldflags string) string {
+	if pie {
+		cflags = cflags + " -fPIE"
+		ldflags = ldflags + " -fPIE -pie"
+	}
+	args := []string{
+		"cd ${tmpdir}/nginx-${NGINX_VERSION} && LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}/src LUAJIT_INC=${tmpdir}/LuaJIT-${LUAJIT}/src ./configure",
+		"--prefix=/etc/nginx",
+		"--sbin-path=/usr/sbin/nginx",
+		"--modules-path=${modules_path}",
+		"--conf-path=/etc/nginx/nginx.conf",
+		"--error-log-path=/var/log/nginx/error.log",
+		"--http-log-path=/var/log/nginx/access.log",
+		"--pid-path=/var/run/nginx.pid",
+		"--lock-path=/var/run/nginx.lock",
+		"--http-client-body-temp-path=/var/cache/nginx/client_temp",
+		"--http-proxy-temp-path=/var/cache/nginx/proxy_temp",
+		"--http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp",
+		"--http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp",
+		"--http-scgi-temp-path=/var/cache/nginx/scgi_temp",
+		"--user=nginx",
+		"--group=nginx",
+		"--with-http_ssl_module",
+		"--with-http_realip_module",
+		"--with-http_addition_module",
+		"--with-http_sub_module",
+		"--with-http_dav_module",
+		"--with-http_flv_module",
+		"--with-http_mp4_module",
+		"--with-http_gunzip_module",
+		"--with-http_gzip_static_module",
+		"--with-http_random_index_module",
+		"--with-http_secure_link_module",
+		"--with-http_stub_status_module",
+		"--with-http_auth_request_module",
+		"--with-threads",
+		"--with-stream",
+		"--with-stream_ssl_module",
+		"--with-http_slice_module",
+		"--with-file-aio",
+		"--with-ipv6",
+		"--with-http_v2_module",
+		"--with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic " + cflags + "'",
+		"--with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now " + ldflags + "'",
+	}
+
+	// if we are not PIE, then we can build the shared libaries too
+	if !pie {
+		args = append(args, "--add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL}")
+		args = append(args, "--add-dynamic-module=../lua-nginx-module-${NGINX_LUA}")
+	}
+
+	return strings.Join(args, " \\\n")
+}
+
+func buildNginx(cflags, ldflags string) []string {
+	lines := []string{
+		`wget -nv -O ${tmpdir}/checksec https://raw.githubusercontent.com/slimm609/checksec.sh/master/checksec`,
+		`wget -nv -O LuaJIT-${LUAJIT}.tar.gz http://luajit.org/download/LuaJIT-${LUAJIT}.tar.gz`,
+		`wget -nv -O nginx-${NGINX_VERSION}.tar.gz http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz`,
+		`wget -nv -O lua-nginx-module-${NGINX_LUA}.tar.gz https://github.com/openresty/lua-nginx-module/archive/v${NGINX_LUA}.tar.gz`,
+		`wget -nv -O ngx_devel_kit-${NGINX_DEVEL}.tar.gz https://github.com/simpl/ngx_devel_kit/archive/v${NGINX_DEVEL}.tar.gz`,
+		`tar -xf LuaJIT-${LUAJIT}.tar.gz`,
+		`tar -xf lua-nginx-module-${NGINX_LUA}.tar.gz`,
+		`tar -xf ngx_devel_kit-${NGINX_DEVEL}.tar.gz`,
+		`tar -xf nginx-${NGINX_VERSION}.tar.gz`,
+		`cd ${tmpdir}/LuaJIT-${LUAJIT} && make amalg BUILDMODE=static CC="gcc -fPIC"`,
+		`cp ${tmpdir}/LuaJIT-${LUAJIT}/src/libluajit.a ${tmpdir}/LuaJIT-${LUAJIT}/src/libluajit-5.1.a`,
+		//
+		// make PIE version without DSO.  Keep the nginx binary
+		//
+		configNginx(true, cflags, ldflags),
+		`cd ${tmpdir}/nginx-${NGINX_VERSION} && make -f objs/Makefile binary`,
+		//`find . -name 'nginx' -type f`,
+		`cp ./objs/nginx ./objs/nginx-pie`,
+
+		//
+		//redo without PIE, so we can make modules.  Ignore nginx binary, keep the modules
+		//
+		configNginx(false, cflags, ldflags),
+		`cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install`,
+		`ls -l /usr/sbin/nginx`,
+		//`cp ./objs/nginx-pie /usr/sbin/nginx-pie`,
+		`cp ./objs/nginx-pie /usr/sbin/nginx`,
+		`ls -l /usr/sbin/nginx`,
+		`/bin/bash -f ${tmpdir}/checksec -f /usr/sbin/nginx`,
+		//`/bin/bash -f ${tmpdir}/checksec -f /usr/sbin/nginx-pie`,
+		`/bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ndk_http_module.so`,
+		`/bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ngx_http_lua_module.so`,
+		`mkdir -p /var/cache/nginx/client_temp`,
+	}
+	return lines
 }
 
 var nginx_test = []string{
@@ -261,31 +296,28 @@ func main() {
 	var modulesPath string
 	var cflagSecurity string
 
-	switch *argOS {
-	case "centos", "rhel", "redhat":
-		cmds = mergeLines(centos_header, build_nginx, centos_footer)
-		installs = centos_installs
-		modulesPath = "/usr/lib64/nginx/modules"
-	case "debian", "ubuntu":
-		cmds = mergeLines(ubuntu_header, build_nginx, ubuntu_footer)
-		installs = ubuntu_installs
-		modulesPath = "/etc/nginx/modules"
-	default:
-		log.Fatalf("Unknown OS type: should be centos or ubuntu")
-	}
-
 	// hacks around various old compilers.  We are explicity doing the replacement
 	// here and not in the dockerfile so `nginx -V` shows the flags instead of ${cflag_extra}
 	switch *argFrom {
-	case "centos:6":
+	case "centos:6", "ubuntu:14.04":
 		// needed for gcc < 4.9
 		cflagSecurity = "-Wp,-D_FORTIFY_SOURCE=2 -fstack-protector --param ssp-buffer-size=4"
 	default:
 		// gcc > 4.9
 		cflagSecurity = "-Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong"
 	}
-	for i, line := range cmds {
-		cmds[i] = strings.Replace(line, "${cflag_extra}", cflagSecurity, -1)
+
+	switch *argOS {
+	case "centos", "rhel", "redhat":
+		cmds = mergeLines(centos_header, buildNginx(cflagSecurity, ""), centos_footer)
+		installs = centos_installs
+		modulesPath = "/usr/lib64/nginx/modules"
+	case "debian", "ubuntu":
+		cmds = mergeLines(ubuntu_header, buildNginx(cflagSecurity, ""), ubuntu_footer)
+		installs = ubuntu_installs
+		modulesPath = "/etc/nginx/modules"
+	default:
+		log.Fatalf("Unknown OS type: should be centos or ubuntu")
 	}
 
 	fmt.Printf("%s\n", gen.From(*argFrom))
