@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-var centos_installs = "wget gcc autoconf automake libtool pcre-devel openssl-devel"
+var centos_installs = "wget gcc autoconf automake libtool pcre-devel openssl-devel file which"
 
 var centos_header = []string{
 	`yum install -y ${install_packages} pcre openssl`,
@@ -41,6 +41,7 @@ var ubuntu_footer = []string{
 }
 
 var build_nginx = []string{
+	`wget -nv -O ${tmpdir}/checksec https://raw.githubusercontent.com/slimm609/checksec.sh/master/checksec`,
 	`wget -nv -O LuaJIT-${LUAJIT}.tar.gz http://luajit.org/download/LuaJIT-${LUAJIT}.tar.gz`,
 	`wget -nv -O nginx-${NGINX_VERSION}.tar.gz http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz`,
 	`wget -nv -O lua-nginx-module-${NGINX_LUA}.tar.gz https://github.com/openresty/lua-nginx-module/archive/v${NGINX_LUA}.tar.gz`,
@@ -89,9 +90,11 @@ var build_nginx = []string{
     --with-ipv6 \
     --with-http_v2_module \
     --with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic ${cflag_extra}' \
+    --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now' \
     --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
     --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}`,
 	`cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install`,
+	`/bin/bash -f ${tmpdir}/checksec --output csv -f /usr/sbin/nginx`,
 	`mkdir -p /var/cache/nginx/client_temp`,
 }
 
@@ -275,7 +278,6 @@ func main() {
 	case "centos:6":
 		// needed for gcc < 4.9
 		cflagSecurity = "-Wp,-D_FORTIFY_SOURCE=2 -fstack-protector --param ssp-buffer-size=4"
-		//cflagSecurity = "-Wp,-D_FORTIFY_SOURCE=2"
 	default:
 		// gcc > 4.9
 		cflagSecurity = "-Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong"

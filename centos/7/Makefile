@@ -2,6 +2,8 @@ CONTAINER=centos7-nginx-lua
 build:
 		docker build -t ${CONTAINER} .
 
+build-debug:
+		docker build -t ${CONTAINER} -f Dockerfile.debug .
 console:
 		docker run -it --rm ${CONTAINER} bash
 

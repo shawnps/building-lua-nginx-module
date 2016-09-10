@@ -10,7 +10,7 @@ ARG LUAJIT
 ENV LUAJIT="${LUAJIT:-2.0.4}"
 ARG top="${PWD}"
 ARG tmpdir="/tmp/nginx"
-ARG install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel"
+ARG install_packages="wget gcc autoconf automake libtool pcre-devel openssl-devel file which"
 ARG modules_path="/usr/lib64/nginx/modules"
 WORKDIR ${tmpdir}
 COPY ${top}/nginx.conf /etc/nginx/nginx-helloworld.conf
@@ -18,6 +18,7 @@ RUN set -ex \
   && yum install -y ${install_packages} pcre openssl \
   && groupadd -f -r nginx \
   && useradd -r -g nginx -s /sbin/nologin -d /var/cache/nginx -c "nginx user" nginx \
+  && wget -nv -O ${tmpdir}/checksec https://raw.githubusercontent.com/slimm609/checksec.sh/master/checksec \
   && wget -nv -O LuaJIT-${LUAJIT}.tar.gz http://luajit.org/download/LuaJIT-${LUAJIT}.tar.gz \
   && wget -nv -O nginx-${NGINX_VERSION}.tar.gz http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
   && wget -nv -O lua-nginx-module-${NGINX_LUA}.tar.gz https://github.com/openresty/lua-nginx-module/archive/v${NGINX_LUA}.tar.gz \
@@ -66,9 +67,11 @@ RUN set -ex \
     --with-ipv6 \
     --with-http_v2_module \
     --with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong' \
+    --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now' \
     --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
     --add-dynamic-module=../lua-nginx-module-${NGINX_LUA} \
   && cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install \
+  && /bin/bash -f ${tmpdir}/checksec --output csv -f /usr/sbin/nginx \
   && mkdir -p /var/cache/nginx/client_temp \
   && yum remove -y ${install_packages} \
   && yum clean all \

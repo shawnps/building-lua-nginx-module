@@ -18,6 +18,7 @@ RUN apt-get update
 RUN apt-get install -y --no-install-recommends procps libpcre3 zlib1g openssl ca-certificates ${install_packages}
 RUN groupadd -r nginx
 RUN useradd -r -g nginx -s /sbin/nologin -d /var/cache/nginx -c "nginx user" nginx
+RUN wget -nv -O ${tmpdir}/checksec https://raw.githubusercontent.com/slimm609/checksec.sh/master/checksec
 RUN wget -nv -O LuaJIT-${LUAJIT}.tar.gz http://luajit.org/download/LuaJIT-${LUAJIT}.tar.gz
 RUN wget -nv -O nginx-${NGINX_VERSION}.tar.gz http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz
 RUN wget -nv -O lua-nginx-module-${NGINX_LUA}.tar.gz https://github.com/openresty/lua-nginx-module/archive/v${NGINX_LUA}.tar.gz
@@ -66,9 +67,11 @@ RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && \
     --with-ipv6 \
     --with-http_v2_module \
     --with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong' \
+    --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now' \
     --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
     --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}
 RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install
+RUN /bin/bash -f ${tmpdir}/checksec --output csv -f /usr/sbin/nginx
 RUN mkdir -p /var/cache/nginx/client_temp
 RUN rm -rf ${tmpdir}
 RUN apt-get purge -y ${install_packages}
