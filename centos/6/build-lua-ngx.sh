@@ -72,7 +72,9 @@ cd ${tmpdir}/nginx-${NGINX_VERSION} && \
     --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
     --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}
 cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install
-/bin/bash -f ${tmpdir}/checksec --output csv -f /usr/sbin/nginx
+/bin/bash -f ${tmpdir}/checksec -f /usr/sbin/nginx
+/bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ndk_http_module.so
+/bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ngx_http_lua_module.so
 mkdir -p /var/cache/nginx/client_temp
 yum remove -y ${install_packages}
 yum clean all

@@ -65,10 +65,14 @@ RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && \
     --with-file-aio \
     --with-ipv6 \
     --with-http_v2_module \
-    --with-cc-opt='-O2 -g -pipe -Wall -fexceptions -fPIE -m64 -mtune=generic -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong' \
-    --with-ld-opt='-Wl,-Bsymbolic-functions -fPIE -pie -Wl,-z,relro -Wl,-z,now' 
+    --with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong' \
+    --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now' \
+    --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
+    --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}
 RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install
-RUN /bin/bash -f ${tmpdir}/checksec --output csv -f /usr/sbin/nginx
+RUN /bin/bash -f ${tmpdir}/checksec -f /usr/sbin/nginx
+RUN /bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ndk_http_module.so
+RUN /bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ngx_http_lua_module.so
 RUN mkdir -p /var/cache/nginx/client_temp
 RUN yum remove -y ${install_packages}
 RUN yum clean all
