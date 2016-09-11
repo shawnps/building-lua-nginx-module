@@ -110,9 +110,9 @@ RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}
 --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
 --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}
 RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install
-RUN ls -l /usr/sbin/nginx
 RUN cp ./objs/nginx-pie /usr/sbin/nginx
-RUN ls -l /usr/sbin/nginx
+RUN ls -l /usr/sbin/nginx ${modules_path}
+RUN /usr/sbin/nginx -V
 RUN /bin/bash -f ${tmpdir}/checksec -f /usr/sbin/nginx
 RUN /bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ndk_http_module.so
 RUN /bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ngx_http_lua_module.so
