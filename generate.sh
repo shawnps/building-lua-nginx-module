@@ -18,7 +18,7 @@ go run main.go ${ARGS} -style=docker-debug > ${OS}/Dockerfile.debug
 go run main.go ${ARGS} -style=sh > ${OS}/build-lua-ngx.sh
 chmod a+x ${OS}/build-lua-ngx.sh
 
-OS=ubuntu/16.04
+OS=ubuntu/1604
 ARGS="-os=ubuntu -from=ubuntu:16.04 -maintainer signalsciences.com"
 mkdir -p ${OS} 
 cp testing/nginx.conf ${OS}
@@ -27,7 +27,7 @@ go run main.go ${ARGS} -style=docker-debug > ${OS}/Dockerfile.debug
 go run main.go ${ARGS} -style=sh > ${OS}/build-lua-ngx.sh
 chmod a+x ${OS}/build-lua-ngx.sh
 
-OS=ubuntu/14.04
+OS=ubuntu/1404
 ARGS="-os=ubuntu -from=ubuntu:14.04 -maintainer signalsciences.com"
 mkdir -p ${OS} 
 cp testing/nginx.conf ${OS}
