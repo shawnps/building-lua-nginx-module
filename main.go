@@ -83,7 +83,7 @@ func configNginx(pie bool, cflags string, ldflags string) string {
 		"--with-file-aio",
 		"--with-ipv6",
 		"--with-http_v2_module",
-		"--with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic " + cflags + "'",
+		"--with-cc-opt='-O2 -g -pipe -Wall -fexceptions -fstack-protector -m64 -mtune=generic " + cflags + "'",
 		"--with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now " + ldflags + "'",
 	}
 
@@ -123,6 +123,7 @@ func buildNginx(cflags, ldflags string) []string {
 		configNginx(false, cflags, ldflags),
 		`cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install`,
 		`cp ./objs/nginx-pie /usr/sbin/nginx`,
+		`chmod a-x ${modules_path}/ndk_http_module.so ${modules_path}/ngx_http_lua_module.so`,
 		`ls -l /usr/sbin/nginx ${modules_path}`,
 		`/usr/sbin/nginx -V`,
 		`/bin/bash -f ${tmpdir}/checksec -f /usr/sbin/nginx`,
