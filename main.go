@@ -19,6 +19,9 @@ var centos_header = []string{
 }
 
 var centos_footer = []string{
+	// oddly nginx installs in /usr/lib64/nginx/modules,  but loads from /etc/nginx/modules
+	// so need to make symlink
+	`cd /etc/nginx && ln -sf ../../usr/lib64/nginx/modules modules`,
 	`yum remove -y ${install_packages}`,
 	`yum clean all`,
 	`rm -rf /var/cache/yum/* ${tmpdir}`,
@@ -83,7 +86,7 @@ func configNginx(pie bool, cflags string, ldflags string) string {
 		"--with-file-aio",
 		"--with-ipv6",
 		"--with-http_v2_module",
-		"--with-cc-opt='-O2 -g -pipe -Wall -fexceptions -fstack-protector -m64 -mtune=generic " + cflags + "'",
+		"--with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic " + cflags + "'",
 		"--with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now " + ldflags + "'",
 	}
 
@@ -123,7 +126,16 @@ func buildNginx(cflags, ldflags string) []string {
 		configNginx(false, cflags, ldflags),
 		`cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install`,
 		`cp ./objs/nginx-pie /usr/sbin/nginx`,
+
+		// unclear why executable is set
 		`chmod a-x ${modules_path}/ndk_http_module.so ${modules_path}/ngx_http_lua_module.so`,
+
+		// copy the current to be -debug version, strip the existing for prod
+		`cp ${modules_path}/ndk_http_module.so ${modules_path}/ndk_http_module-debug.so`,
+		`cp ${modules_path}/ngx_http_lua_module.so ${modules_path}/ngx_http_lua_module-debug.so`,
+		`strip ${modules_path}/ndk_http_module.so ${modules_path}/ngx_http_lua_module.so`,
+
+		// see what we did
 		`ls -l /usr/sbin/nginx ${modules_path}`,
 		`/usr/sbin/nginx -V`,
 		`/bin/bash -f ${tmpdir}/checksec -f /usr/sbin/nginx`,

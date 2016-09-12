@@ -64,7 +64,7 @@ RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}
 --with-file-aio \
 --with-ipv6 \
 --with-http_v2_module \
---with-cc-opt='-O2 -g -pipe -Wall -fexceptions -fstack-protector -m64 -mtune=generic -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong -fPIE' \
+--with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong -fPIE' \
 --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now  -fPIE -pie'
 RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && make -f objs/Makefile binary
 RUN cp ./objs/nginx ./objs/nginx-pie
@@ -104,19 +104,23 @@ RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}
 --with-file-aio \
 --with-ipv6 \
 --with-http_v2_module \
---with-cc-opt='-O2 -g -pipe -Wall -fexceptions -fstack-protector -m64 -mtune=generic -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong' \
+--with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong' \
 --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now ' \
 --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
 --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}
 RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install
 RUN cp ./objs/nginx-pie /usr/sbin/nginx
 RUN chmod a-x ${modules_path}/ndk_http_module.so ${modules_path}/ngx_http_lua_module.so
+RUN cp ${modules_path}/ndk_http_module.so ${modules_path}/ndk_http_module-debug.so
+RUN cp ${modules_path}/ngx_http_lua_module.so ${modules_path}/ngx_http_lua_module-debug.so
+RUN strip ${modules_path}/ndk_http_module.so ${modules_path}/ngx_http_lua_module.so
 RUN ls -l /usr/sbin/nginx ${modules_path}
 RUN /usr/sbin/nginx -V
 RUN /bin/bash -f ${tmpdir}/checksec -f /usr/sbin/nginx
 RUN /bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ndk_http_module.so
 RUN /bin/bash -f ${tmpdir}/checksec -f ${modules_path}/ngx_http_lua_module.so
 RUN mkdir -p /var/cache/nginx/client_temp
+RUN cd /etc/nginx && ln -sf ../../usr/lib64/nginx/modules modules
 RUN yum remove -y ${install_packages}
 RUN yum clean all
 RUN rm -rf /var/cache/yum/* ${tmpdir}

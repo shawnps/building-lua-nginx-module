@@ -67,7 +67,7 @@ cd ${tmpdir}/nginx-${NGINX_VERSION} && LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}/src
 --with-file-aio \
 --with-ipv6 \
 --with-http_v2_module \
---with-cc-opt='-O2 -g -pipe -Wall -fexceptions -fstack-protector -m64 -mtune=generic -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector --param ssp-buffer-size=4 -fPIE' \
+--with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector --param ssp-buffer-size=4 -fPIE' \
 --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now  -fPIE -pie'
 cd ${tmpdir}/nginx-${NGINX_VERSION} && make -f objs/Makefile binary
 cp ./objs/nginx ./objs/nginx-pie
@@ -107,13 +107,16 @@ cd ${tmpdir}/nginx-${NGINX_VERSION} && LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}/src
 --with-file-aio \
 --with-ipv6 \
 --with-http_v2_module \
---with-cc-opt='-O2 -g -pipe -Wall -fexceptions -fstack-protector -m64 -mtune=generic -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector --param ssp-buffer-size=4' \
+--with-cc-opt='-O2 -g -pipe -Wall -fexceptions -m64 -mtune=generic -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector --param ssp-buffer-size=4' \
 --with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,-z,now ' \
 --add-dynamic-module=../ngx_devel_kit-${NGINX_DEVEL} \
 --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}
 cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install
 cp ./objs/nginx-pie /usr/sbin/nginx
 chmod a-x ${modules_path}/ndk_http_module.so ${modules_path}/ngx_http_lua_module.so
+cp ${modules_path}/ndk_http_module.so ${modules_path}/ndk_http_module-debug.so
+cp ${modules_path}/ngx_http_lua_module.so ${modules_path}/ngx_http_lua_module-debug.so
+strip ${modules_path}/ndk_http_module.so ${modules_path}/ngx_http_lua_module.so
 ls -l /usr/sbin/nginx ${modules_path}
 /usr/sbin/nginx -V
 /bin/bash -f ${tmpdir}/checksec -f /usr/sbin/nginx
