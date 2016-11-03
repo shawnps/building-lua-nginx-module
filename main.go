@@ -126,6 +126,8 @@ func buildNginx(cflags, ldflags string) []string {
 		configNginx(false, cflags, ldflags),
 		`cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install`,
 		`cp ./objs/nginx-pie /usr/sbin/nginx`,
+		`cp /usr/sbin/nginx /usr/sbin/nginx-debug`,
+		`strip /usr/sbin/nginx`,
 
 		// unclear why executable is set
 		`chmod a-x ${modules_path}/ndk_http_module.so ${modules_path}/ngx_http_lua_module.so`,
@@ -297,7 +299,7 @@ func main() {
 	}
 
 	env := [][2]string{
-		{"NGINX_VERSION", "1.10.1"},
+		{"NGINX_VERSION", "1.10.2"},
 		{"NGINX_LUA", "0.10.6"},
 		{"NGINX_DEVEL", "0.3.0"},
 		{"LUAJIT", "2.0.4"},
