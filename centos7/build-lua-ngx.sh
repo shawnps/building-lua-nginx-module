@@ -3,7 +3,7 @@ set -ex
 # FROM centos:7
 # MAINTAINER signalsciences.com
 
-export NGINX_VERSION="${NGINX_VERSION:-1.10.1}"
+export NGINX_VERSION="${NGINX_VERSION:-1.10.2}"
 
 export NGINX_LUA="${NGINX_LUA:-0.10.6}"
 
@@ -112,6 +112,8 @@ cd ${tmpdir}/nginx-${NGINX_VERSION} && LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}/src
 --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}
 cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install
 cp ./objs/nginx-pie /usr/sbin/nginx
+cp /usr/sbin/nginx /usr/sbin/nginx-debug
+strip /usr/sbin/nginx
 chmod a-x ${modules_path}/ndk_http_module.so ${modules_path}/ngx_http_lua_module.so
 cp ${modules_path}/ndk_http_module.so ${modules_path}/ndk_http_module-debug.so
 cp ${modules_path}/ngx_http_lua_module.so ${modules_path}/ngx_http_lua_module-debug.so

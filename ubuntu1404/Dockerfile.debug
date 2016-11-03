@@ -1,7 +1,7 @@
 FROM ubuntu:14.04
 MAINTAINER signalsciences.com
 ARG NGINX_VERSION
-ENV NGINX_VERSION="${NGINX_VERSION:-1.10.1}"
+ENV NGINX_VERSION="${NGINX_VERSION:-1.10.2}"
 ARG NGINX_LUA
 ENV NGINX_LUA="${NGINX_LUA:-0.10.6}"
 ARG NGINX_DEVEL
@@ -111,6 +111,8 @@ RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && LUAJIT_LIB=${tmpdir}/LuaJIT-${LUAJIT}
 --add-dynamic-module=../lua-nginx-module-${NGINX_LUA}
 RUN cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install
 RUN cp ./objs/nginx-pie /usr/sbin/nginx
+RUN cp /usr/sbin/nginx /usr/sbin/nginx-debug
+RUN strip /usr/sbin/nginx
 RUN chmod a-x ${modules_path}/ndk_http_module.so ${modules_path}/ngx_http_lua_module.so
 RUN cp ${modules_path}/ndk_http_module.so ${modules_path}/ndk_http_module-debug.so
 RUN cp ${modules_path}/ngx_http_lua_module.so ${modules_path}/ngx_http_lua_module-debug.so

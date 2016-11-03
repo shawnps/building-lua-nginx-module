@@ -1,7 +1,7 @@
 FROM ubuntu:16.04
 MAINTAINER signalsciences.com
 ARG NGINX_VERSION
-ENV NGINX_VERSION="${NGINX_VERSION:-1.10.1}"
+ENV NGINX_VERSION="${NGINX_VERSION:-1.10.2}"
 ARG NGINX_LUA
 ENV NGINX_LUA="${NGINX_LUA:-0.10.6}"
 ARG NGINX_DEVEL
@@ -112,6 +112,8 @@ RUN set -ex \
 --add-dynamic-module=../lua-nginx-module-${NGINX_LUA} \
   && cd ${tmpdir}/nginx-${NGINX_VERSION} && make && make install \
   && cp ./objs/nginx-pie /usr/sbin/nginx \
+  && cp /usr/sbin/nginx /usr/sbin/nginx-debug \
+  && strip /usr/sbin/nginx \
   && chmod a-x ${modules_path}/ndk_http_module.so ${modules_path}/ngx_http_lua_module.so \
   && cp ${modules_path}/ndk_http_module.so ${modules_path}/ndk_http_module-debug.so \
   && cp ${modules_path}/ngx_http_lua_module.so ${modules_path}/ngx_http_lua_module-debug.so \
