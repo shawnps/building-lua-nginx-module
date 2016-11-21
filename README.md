@@ -44,9 +44,9 @@ All dependencies, include the version of nginx itself, are configurable by adjus
 
 ```
 ENV \
-  NGINX_VERSION=1.10.1  \
-  NGINX_LUA=0.10.5  \
-  NGINX_DEVEL=0.3.0  \
+  NGINX_VERSION=1.10.2 \
+  NGINX_LUA=0.10.7 \
+  NGINX_DEVEL=0.3.0 \
   LUAJIT=2.0.4
 ```
 
@@ -65,7 +65,7 @@ load_module modules/ngx_http_lua_module.so;
 
 The bash scripts and the Dockerfiles are 99.9% identical.  The [main.go](/main.go) generator script takes a list of shell commands, and reformats them for use in either bash or in Docker.
 
-You dont need to run it, since the generated files are checked in.  Feel free to use it for other purposes.
+You do not need to run it, since the generated files are checked in.  Feel free to use it for other purposes.
 
 ## Alpine Linux
 
