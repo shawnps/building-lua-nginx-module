@@ -5,7 +5,7 @@ set -ex
 
 export NGINX_VERSION="${NGINX_VERSION:-1.10.2}"
 
-export NGINX_LUA="${NGINX_LUA:-0.10.6}"
+export NGINX_LUA="${NGINX_LUA:-0.10.7}"
 
 export NGINX_DEVEL="${NGINX_DEVEL:-0.3.0}"
 
@@ -21,8 +21,8 @@ apt-get install -y --no-install-recommends procps libpcre3 zlib1g openssl ca-cer
 groupadd -r nginx
 useradd -r -g nginx -s /sbin/nologin -d /var/cache/nginx -c "nginx user" nginx
 wget -nv -O ${tmpdir}/checksec https://raw.githubusercontent.com/slimm609/checksec.sh/master/checksec
-wget -nv -O LuaJIT-${LUAJIT}.tar.gz http://luajit.org/download/LuaJIT-${LUAJIT}.tar.gz
-wget -nv -O nginx-${NGINX_VERSION}.tar.gz http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz
+wget -nv -O LuaJIT-${LUAJIT}.tar.gz https://luajit.org/download/LuaJIT-${LUAJIT}.tar.gz
+wget -nv -O nginx-${NGINX_VERSION}.tar.gz https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz
 wget -nv -O lua-nginx-module-${NGINX_LUA}.tar.gz https://github.com/openresty/lua-nginx-module/archive/v${NGINX_LUA}.tar.gz
 wget -nv -O ngx_devel_kit-${NGINX_DEVEL}.tar.gz https://github.com/simpl/ngx_devel_kit/archive/v${NGINX_DEVEL}.tar.gz
 tar -xf LuaJIT-${LUAJIT}.tar.gz
