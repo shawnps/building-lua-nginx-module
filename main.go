@@ -300,7 +300,7 @@ func main() {
 
 	env := [][2]string{
 		{"NGINX_VERSION", "1.10.2"},
-		{"NGINX_LUA", "0.10.6"},
+		{"NGINX_LUA", "0.10.7"},
 		{"NGINX_DEVEL", "0.3.0"},
 		{"LUAJIT", "2.0.4"},
 	}
