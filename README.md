@@ -1,4 +1,7 @@
 # building-lua-nginx-module
+
+[![Build Status](https://travis-ci.org/signalsciences/building-lua-nginx-module.svg?branch=master)](https://travis-ci.org/signalsciences/building-lua-nginx-module)
+
 scripts and Dockerfiles for building lua-nginx-module for nginx
 
 Each directory contains three sample files to aid in building [nginx](http://nginx.org) + [lua-ngx-module](https://github.com/openresty/lua-nginx-module) from source.  It takes about 2 minutes to build everything.
