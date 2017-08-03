@@ -10,15 +10,15 @@ import (
 	"strings"
 )
 
-var centos_installs = "wget gcc autoconf automake libtool pcre-devel openssl-devel file which"
+var centosInstalls = "wget gcc autoconf automake libtool pcre-devel openssl-devel file which"
 
-var centos_header = []string{
+var centosHeader = []string{
 	`yum install -y ${install_packages} pcre openssl`,
 	`groupadd -f -r nginx`,
 	`useradd -r -g nginx -s /sbin/nologin -d /var/cache/nginx -c "nginx user" nginx`,
 }
 
-var centos_footer = []string{
+var centosFooter = []string{
 	// oddly nginx installs in /usr/lib64/nginx/modules,  but loads from /etc/nginx/modules
 	// so need to make symlink
 	`cd /etc/nginx && ln -sf ../../usr/lib64/nginx/modules modules`,
@@ -27,16 +27,16 @@ var centos_footer = []string{
 	`rm -rf /var/cache/yum/* ${tmpdir}`,
 }
 
-var ubuntu_installs = "make wget gcc autoconf automake libtool libc6-dev libc-dev libpcre3-dev zlib1g-dev libssl-dev pgp"
+var ubuntuInstalls = "make wget gcc autoconf automake libtool libc6-dev libc-dev libpcre3-dev zlib1g-dev libssl-dev pgp"
 
-var ubuntu_header = []string{
+var ubuntuHeader = []string{
 	`apt-get update`,
 	`apt-get install -y --no-install-recommends procps libpcre3 zlib1g openssl ca-certificates ${install_packages}`,
 	`groupadd -r nginx`,
 	`useradd -r -g nginx -s /sbin/nologin -d /var/cache/nginx -c "nginx user" nginx`,
 }
 
-var ubuntu_footer = []string{
+var ubuntuFooter = []string{
 	`rm -rf ${tmpdir}`,
 	`apt-get purge -y ${install_packages}`,
 	`apt-get autoremove -y`,
@@ -148,12 +148,7 @@ func buildNginx(cflags, ldflags string) []string {
 	return lines
 }
 
-var nginx_test = []string{
-	`nginx -c /etc/nginx/nginx-helloworld.conf`,
-	`curl -sS http://127.0.0.1/lua_content`,
-	`nginx -s stop`,
-}
-
+// Generator is a Docker or script generator
 type Generator interface {
 	Copy(string, string) string
 	From(string) string
@@ -165,22 +160,27 @@ type Generator interface {
 	Workdir(string) string
 }
 
+// DockerGenerator generates Dockerfiles
 type DockerGenerator struct {
 	Debug bool
 }
 
+// Copy generates a COPY statement
 func (d *DockerGenerator) Copy(src, dest string) string {
 	return fmt.Sprintf("COPY %s %s", src, dest)
 }
 
+// From generates a FROM statement
 func (d *DockerGenerator) From(arg string) string {
 	return "FROM " + arg
 }
 
+// Maintainer generates a MAINTAINER statement
 func (d *DockerGenerator) Maintainer(arg string) string {
 	return "MAINTAINER " + arg
 }
 
+// Arg generates an ARG statement
 func (d *DockerGenerator) Arg(key, value string) string {
 	if value == "" {
 		return fmt.Sprintf("ARG %s", key)
@@ -188,10 +188,12 @@ func (d *DockerGenerator) Arg(key, value string) string {
 	return fmt.Sprintf("ARG %s=%q", key, value)
 }
 
+// SetEnv generates an ENV statement
 func (d *DockerGenerator) SetEnv(key, value string) string {
 	return fmt.Sprintf("ENV %s=%q", key, value)
 }
 
+// Env generates ENV statements with multiple key-value pairs
 func (d *DockerGenerator) Env(args [][2]string) string {
 	lines := make([]string, 0, len(args))
 	for _, kv := range args {
@@ -200,6 +202,7 @@ func (d *DockerGenerator) Env(args [][2]string) string {
 	return "ENV \\\n" + strings.Join(lines, "  \\\n")
 }
 
+// Run generates a RUN statement
 func (d *DockerGenerator) Run(cmds []string) string {
 	if !d.Debug {
 		lines := []string{"RUN set -ex"}
@@ -218,23 +221,31 @@ func (d *DockerGenerator) Run(cmds []string) string {
 
 }
 
+// Workdir generates a WORKDIR statement
 func (d *DockerGenerator) Workdir(dir string) string {
 	return "WORKDIR " + dir
 }
 
+// ShellGenerator is a generator for shell scripts
 type ShellGenerator struct {
 }
 
+// Copy generates a cp
 func (d *ShellGenerator) Copy(src, dest string) string {
 	return fmt.Sprintf("cp -f %s %s", src, dest)
 }
 
+// From generates a FROM statement
 func (d *ShellGenerator) From(arg string) string {
 	return "#!/bin/sh\nset -ex\n# FROM " + arg
 }
+
+// Maintainer generates a MAINTAINER statement
 func (d *ShellGenerator) Maintainer(arg string) string {
 	return "# MAINTAINER " + arg
 }
+
+// Arg generates an export statement, defaulting to "" if value is empty
 func (d *ShellGenerator) Arg(key, value string) string {
 	if value == "" {
 		return ""
@@ -242,10 +253,12 @@ func (d *ShellGenerator) Arg(key, value string) string {
 	return fmt.Sprintf("export %s=%q", key, value)
 }
 
+// SetEnv generates an export statement
 func (d *ShellGenerator) SetEnv(key, value string) string {
 	return fmt.Sprintf("export %s=%q", key, value)
 }
 
+// Env generates export statements for multiple key-value pairs
 func (d *ShellGenerator) Env(args [][2]string) string {
 	lines := make([]string, 0, len(args))
 	for _, kv := range args {
@@ -254,6 +267,7 @@ func (d *ShellGenerator) Env(args [][2]string) string {
 	return strings.Join(lines, "\n")
 }
 
+// Run generates a script containing multiple cmds
 func (d *ShellGenerator) Run(cmds []string) string {
 	lines := make([]string, 0, len(cmds))
 	for _, line := range cmds {
@@ -262,6 +276,7 @@ func (d *ShellGenerator) Run(cmds []string) string {
 	return strings.Join(lines, "\n")
 }
 
+// Workdir generates a mkdir statement
 func (d *ShellGenerator) Workdir(dir string) string {
 	return fmt.Sprintf("mkdir -p %s && cd %s", dir, dir)
 }
@@ -309,7 +324,7 @@ func main() {
 	var modulesPath string
 	var cflagSecurity string
 
-	// hacks around various old compilers.  We are explicity doing the replacement
+	// hacks around various old compilers.  We are explicitly doing the replacement
 	// here and not in the dockerfile so `nginx -V` shows the flags instead of ${cflag_extra}
 	switch *argFrom {
 	case "centos:6", "ubuntu:14.04":
@@ -322,12 +337,12 @@ func main() {
 
 	switch *argOS {
 	case "centos", "rhel", "redhat":
-		cmds = mergeLines(centos_header, buildNginx(cflagSecurity, ""), centos_footer)
-		installs = centos_installs
+		cmds = mergeLines(centosHeader, buildNginx(cflagSecurity, ""), centosFooter)
+		installs = centosInstalls
 		modulesPath = "/usr/lib64/nginx/modules"
 	case "debian", "ubuntu":
-		cmds = mergeLines(ubuntu_header, buildNginx(cflagSecurity, ""), ubuntu_footer)
-		installs = ubuntu_installs
+		cmds = mergeLines(ubuntuHeader, buildNginx(cflagSecurity, ""), ubuntuFooter)
+		installs = ubuntuInstalls
 		modulesPath = "/etc/nginx/modules"
 	default:
 		log.Fatalf("Unknown OS type: should be centos or ubuntu")
@@ -348,5 +363,4 @@ func main() {
 	fmt.Printf("%s\n", gen.Workdir("${tmpdir}"))
 	fmt.Printf("%s\n", gen.Copy("${top}/nginx.conf", "/etc/nginx/nginx-helloworld.conf"))
 	fmt.Printf("%s\n", gen.Run(cmds))
-	//fmt.Printf("%s\n", gen.Run(nginx_test))
 }
